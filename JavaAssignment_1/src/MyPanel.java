@@ -13,8 +13,8 @@ public class MyPanel extends JPanel {
 	private static final int TOTAL_COLUMNS = 9;
 	private static final int TOTAL_ROWS = 9;   
 	
-	
-	
+	private static  int[][] mineIndicator;
+	private static  int[][] board;
 
 	int minesAllowed = 27;
 	boolean[][] mineField = new boolean[TOTAL_COLUMNS][TOTAL_ROWS];
@@ -59,6 +59,78 @@ public class MyPanel extends JPanel {
 			}
 		}
 		
+	}
+	
+	
+	public void mineIndicator(boolean[][] mineField){
+		mineIndicator = new int[mineField.length][mineField.length];
+		int mineCounter = 0;
+		for(int i = 0 ; i < mineIndicator.length ; i++) {
+			for (int j = 0; j < mineIndicator[i].length ; j++) {
+				if ( i-1 > -1 && j-1 > -1 && mineField[i-1][j-1]) {
+					mineCounter++;
+				}
+				if ( j-1 > -1 &&  mineField[i][j-1]) {
+					mineCounter++;
+				}
+				if (i+1 < mineIndicator.length && j-1 > -1 && mineField[i+1][j-1]){
+					mineCounter++;
+				}
+				if (i-1 > -1 && mineField[i-1][j]){
+					mineCounter++;
+				}
+				if (i+1 < mineIndicator.length && mineField[i+1][j]){
+					mineCounter++;
+				}
+				if (i-1 >-1 && j+1 < mineIndicator.length && mineField[i-1][j+1]){
+					mineCounter++;
+				}
+				if (j+1 < mineIndicator.length && mineField[i][j+1]){
+					mineCounter++;
+				}
+				if (i+1 < mineIndicator.length && j+1 < mineIndicator.length && mineField[i+1][j+1]){
+					mineCounter++;
+				}
+				
+				mineIndicator[i][j] = mineCounter;
+				mineCounter = 0; //resets the mine count for next run
+			}
+		}		
+	}
+	
+	private void chainReaction(int x, int y) {
+		if (x < 0 || x >TOTAL_COLUMNS - 1 || y < 0 || y > TOTAL_ROWS - 1 || mineField[x][y] || colorArray[x][y] == Color.RED || mineIndicator[x][y] == -1) {
+			return;
+		}
+		
+		if (mineIndicator[x][y] != 0) {
+			
+			board[x][y] = mineIndicator[x][y];
+			colorArray[x][y] = Color.WHITE;
+			
+			// once an indicator has been marked, don't mark again
+			mineIndicator[x][y] = -1;
+			return;
+		}
+		
+		else if (mineIndicator[x][y] == 0) {
+			colorArray[x][y] = Color.WHITE;
+			mineIndicator[x][y] = -1;
+			
+			chainReaction(x, y-1);
+			chainReaction(x, y+1);
+			chainReaction(x-1, y);
+			chainReaction(x+1, y);
+			chainReaction(x-1, y-1);
+			chainReaction(x+1, y-1);
+			chainReaction(x-1, y+1);
+			chainReaction(x+1, y+1);
+			
+			return;
+		}
+		else{
+			return;
+		}
 	}
 	
 
