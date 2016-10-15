@@ -11,7 +11,7 @@ public class MyPanel extends JPanel {
 	private static final int GRID_Y = 25;
 	private static final int INNER_CELL_SIZE = 29;
 	private static final int TOTAL_COLUMNS = 9;
-	private static final int TOTAL_ROWS = 9;
+	private static final int TOTAL_ROWS = 10;
 
 	public int x = -1;
 	public int y = -1;
@@ -46,9 +46,11 @@ public class MyPanel extends JPanel {
 
 		for (int x = 0; x < TOTAL_COLUMNS; x++) { // The rest of the grid
 			for (int y = 0; y < TOTAL_ROWS; y++) {
-				SweeperBehavior.getColorField()[x][y] = Color.GRAY;
+				SweeperBehavior.getColorField()[x][y] = Color.WHITE;
 			}
 		}
+		
+		sweeper.generateMines();
 	}
 
 	public void paintComponent(Graphics g) {
@@ -100,7 +102,6 @@ public class MyPanel extends JPanel {
 			}
 		}
 	}
-
 	public int getGridX(int x, int y) {
 		Insets myInsets = getInsets();
 		int x1 = myInsets.left;

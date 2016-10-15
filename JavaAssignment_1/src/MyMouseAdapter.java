@@ -3,13 +3,16 @@ import java.awt.Component;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Random;
+
 
 import javax.swing.JFrame;
 
 public class MyMouseAdapter extends MouseAdapter {
-	private Random generator = new Random();
-
+	
+	Color newColor = null;
+	Color lastColor = null;
+	SweeperBehavior sweeper = new SweeperBehavior();
+	
 	public void mousePressed(MouseEvent e) {
 		switch (e.getButton()) {
 		case 1: // Left mouse button
@@ -35,31 +38,38 @@ public class MyMouseAdapter extends MouseAdapter {
 			myPanel.repaint();
 			break;
 		case 3: // Right mouse button
-			Component r = e.getComponent();
-			while (!(r instanceof JFrame)) {
-				r = r.getParent();
-				if (r == null) {
+			c = e.getComponent();
+			while (!(c instanceof JFrame)) {
+				c = c.getParent();
+				if (c == null) {
 					return;
 				}
 			}
+
+			myFrame = (JFrame) c;
+			myPanel = (MyPanel) myFrame.getContentPane().getComponent(0);
+			myInsets = myFrame.getInsets();
+
+			x1 = myInsets.left;
+			y1 = myInsets.top;
+			e.translatePoint(-x1, -y1);
+
+			x = e.getX();
+			y = e.getY();
+			myPanel.x = x;
+			myPanel.y = y;
+			myPanel.mouseDownGridX = myPanel.getGridX(x, y);
+			myPanel.mouseDownGridY = myPanel.getGridY(x, y);
+			myPanel.repaint();
 			break;
+
 		default: // Some other button (2 = Middle mouse button, etc.)
 			// Do nothing
 			break;
 		}
+	
 	}
 
-	
-	
-	
-	
-	Color lastColor = null;
-	
-	MyPanel mines = new MyPanel();
-	public void generateMines(){
-	mines.generateMines();
-	
-	}
 	public void mouseReleased(MouseEvent e) {
 		switch (e.getButton()) {
 		case 1: // Left mouse button
@@ -71,14 +81,8 @@ public class MyMouseAdapter extends MouseAdapter {
 				}
 			}
 			JFrame myFrame = (JFrame) c;
-			MyPanel myPanel = (MyPanel) myFrame.getContentPane().getComponent(0); // Can
-																					// also
-																					// loop
-																					// among
-																					// components
-																					// to
-																					// find
-																					// MyPanel
+			MyPanel myPanel = (MyPanel) myFrame.getContentPane().getComponent(0); // Can also loop among components to find MyPanel
+																					
 			Insets myInsets = myFrame.getInsets();
 			int x1 = myInsets.left;
 			int y1 = myInsets.top;
@@ -97,52 +101,58 @@ public class MyMouseAdapter extends MouseAdapter {
 					// Is releasing outside
 					// Do nothing
 				} else {
-					if ((gridX >= 0) || (gridY >=0)){
-						Color newColor = Color.BLACK;
-						if (myPanel.mineField[gridX][gridY] == true){
-							myPanel.colorArray[myPanel.mouseDownGridX][myPanel.mouseDownGridY] = newColor;
-
-							myPanel.repaint();
-						}
-					} else {
-						//On the grid other than on the left column and on the top row:
-						Color newColor = null;
-						do{
-						switch (generator.nextInt(6)) {
-						case 0:
-							newColor = Color.YELLOW;
-							break;
-						case 1:
-							newColor = Color.MAGENTA;
-							break;
-						case 2:
-							newColor = Color.BLACK;
-							break;
-						case 3:
-							newColor = new Color(0x964B00);   //Brown (from http://simple.wikipedia.org/wiki/List_of_colors)
-							break;
-						case 4:
-							newColor = new Color(0xB57EDC);   //Lavender (from http://simple.wikipedia.org/wiki/List_of_colors)
-							break;
-						case 5:
-							newColor = Color.RED;
-							break;
-						}
-					}	while(newColor.equals(lastColor) || gridY > 0); 
-						myPanel.colorArray[myPanel.mouseDownGridX][myPanel.mouseDownGridY] = newColor;
+					if(sweeper.hasMine(myPanel.mouseDownGridX, myPanel.mouseDownGridY) && (sweeper.hasFlag(myPanel.mouseDownGridX,myPanel.mouseDownGridY)==false)){
+						SweeperBehavior.gameOver(myPanel.mouseDownGridX,myPanel.mouseDownGridY);
 						myPanel.repaint();
-					}
-						
-						
-						
-						
+						SweeperBehavior.displayLosingStatement();
+				
+				} else {
+					if(sweeper.hasFlag(myPanel.mouseDownGridX,myPanel.mouseDownGridY)==false){
+					sweeper.chainReaction(myPanel.mouseDownGridX, myPanel.mouseDownGridY);
+					
+						} else {
+							//do nothing on flagged cell
 					}
 				}
-			
+			}	
+		
+	}
+			myPanel.repaint();
+			//sweeper.winnerwinnerchickendinner
+			break;
 
 		case 3: // Right mouse button
-			// Do nothing
-			break;
+			c = e.getComponent();
+			while (!(c instanceof JFrame)) {
+			
+				c = c.getParent();
+				if (c == null) {
+				
+					return;
+				}
+			}
+
+			myFrame = (JFrame)c;
+			myPanel = (MyPanel) myFrame.getContentPane().getComponent(0);  //Can also loop among components to find MyPanel
+		
+			x = e.getX();
+			y = e.getY();
+		
+			
+			if ((myPanel.mouseDownGridX == -1) && (myPanel.mouseDownGridY == -1)){
+				//clicking outside grid				
+				} else {
+					if(sweeper.hasFlag(myPanel.mouseDownGridX,myPanel.mouseDownGridY)==false){
+						sweeper.flagCell(myPanel.mouseDownGridX, myPanel.mouseDownGridY);
+					} else {
+							sweeper.unFlagCell(myPanel.mouseDownGridX, myPanel.mouseDownGridY);
+							
+					}
+				 myPanel.repaint();
+			}
+			sweeper.gameWon();
+		break;
+		
 		default: // Some other button (2 = Middle mouse button, etc.)
 			// Do nothing
 			break;
